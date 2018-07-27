@@ -1,0 +1,61 @@
+Bước 1: Cài đặt các thư viện cần thiết
+    react-native install react-native-camera
+    react-native install react-native-qrcode-scanner
+
+Bước 2: Fix các lỗi
+    - Lỗi 1:
+    SDK location not found. Define location with sdk.dir in the local.properties file or with an ANDROID_HOME environment variable.
+    >> Fix : copy file local.properties vào thư mục android
+
+    - Lỗi 2:
+    Could not find method google() for arguments [] on repository container of type org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler.
+    >> Fix : Vào file android/build.gradle
+    buildscript {
+        repositories {
+            ...
+            google() // Thêm cái này vào
+        }
+        dependencies {
+            classpath 'com.android.tools.build:gradle:3.1.0' // Sửa thành 3.1.0
+
+        }
+    }
+
+    ...
+    allprojects {
+        repositories {
+            ..
+            google() // Thêm cái này vào
+        }
+    }
+
+    >> Mở file android/gradle/gradle-wrapper.properties
+    distributionUrl=https\://services.gradle.org/distributions/gradle-4.4-all.zip // Sửa thành phiên bản 4.4
+
+    - Lỗi 3:
+    Could not find method compileOnly() for arguments [com.facebook.react:react-native:+] on object of type org.gradle.api.internal.artifacts.dsl.dependencies.DefaultDependencyHandler.
+    >> Fix : Mở file android/app/src/main/AndroidManifest.xml
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.VIBRATE"/> // Thêm dòng này vào
+    <uses-permission android:name="android.permission.CAMERA"/> // Thêm dòng này vào
+
+    - Lỗi 4: 
+    Android dependency 'com.android.support:support-v4' has different version for the compile (23.0.1) and runtime (27.0.1) classpath.
+    >> Nghĩa là không hỗ trợ sdk 23.0.1 và chỉ support sdk >= 27.0.1
+    >> Fix : mở file build.gradle
+
+    subprojects {
+        // copy đoạn sau vào cuối file
+        project.configurations.all {
+            resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'com.android.support'
+                    && !details.requested.name.contains('multidex')
+            ) {
+                details.useVersion "27.0.1"
+            }
+            }
+        }
+    }
+
+Bước 3: Xóa và viết lại file App.js
